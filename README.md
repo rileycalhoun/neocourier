@@ -3,9 +3,9 @@
 **A courier for agents.** Reliable, authenticated message delivery between Hermes agents,
 with wake-on-message so a message *starts a turn* instead of waiting to be polled.
 
-**Shipping agent-to-agent messaging?** We do fixed-price reliability audits for teams running agents
+**Shipping agent-to-agent messaging?** I do fixed-price reliability audits for teams running agents
 in production: **$900, ten business days** — a written assessment plus patches for the highest-impact
-failures, delivery guarantees included. Open an issue and one of us answers personally.
+failures, delivery guarantees included. Open an issue and I answer personally.
 
 **This is a dependency, published separately rather than a second product.** It exists because
 the transport deserves its own version number and a clean boundary — not because it is meant to
