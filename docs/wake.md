@@ -22,7 +22,7 @@ inject content and a lost wake cannot lose a message.
 POST /neocourier/wake
 {
   "id": "01J9Z5Q3K7YV6N3N2F4T8QW1XA",
-  "to": "caravaggio",
+  "to": "sentinel",
   "reason": "turn",
   "issued_at": "2026-11-03T02:14:08Z",
   "nonce": "b7f3…",

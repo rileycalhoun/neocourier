@@ -57,7 +57,7 @@ neocourier exists to avoid.
 ## Authorization is a reference, not a ruling
 
 `auth.grant` carries the **contract hash** issued by the rig when the sender was hired and
-the specific `capability` being exercised (`message.send`, `message.send:van-gogh`, …).
+the specific `capability` being exercised (`message.send`, `message.send:atlas`, …).
 
 - neocourier checks the signature and the capability syntax, and records the grant.
 - The **receiver** decides whether that grant justifies the message, because only the

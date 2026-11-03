@@ -53,7 +53,7 @@
       "additionalProperties": false,
       "properties": {
         "grant": { "type": "string", "description": "Reference to the rig's contract hash, not a boolean." },
-        "capability": { "type": "string", "examples": ["message.send", "message.send:van-gogh"] },
+        "capability": { "type": "string", "examples": ["message.send", "message.send:atlas"] },
         "sig": { "type": ["string", "null"], "description": "Reserved: separate rig signature over auth (v1.0)." }
       }
     },

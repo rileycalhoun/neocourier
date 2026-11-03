@@ -8,8 +8,8 @@ right and the example is a bug.
 ```bash
 # signed with the agent's own key; the CLI is a debugging surface, not the model's tool
 courier send \
-  --from van-gogh \
-  --to caravaggio \
+  --from atlas \
+  --to sentinel \
   --kind message \
   --subject "Enumeration result" \
   --body-file findings.md \
@@ -28,8 +28,8 @@ courier status 01J9Z5Q3K7YV6N3N2F4T8QW1XA
 ```
 id        01J9Z5Q3K7YV6N3N2F4T8QW1XA
 sent_at   2026-11-03T02:14:07Z
-from      van-gogh
-to        caravaggio
+from      atlas
+to        sentinel
 state     delivered
 wake      refused: already_running   (2026-11-03T02:14:09Z)
 delivered 2026-11-03T02:14:09Z   age=2s
@@ -40,12 +40,12 @@ receipt   none yet
 
 ```http
 POST /neocourier/wake HTTP/1.1
-Host: caravaggio.agents:8766
+Host: sentinel.agents:8766
 Content-Type: application/json
 
 {
   "id": "01J9Z5Q3K7YV6N3N2F4T8QW1XA",
-  "to": "caravaggio",
+  "to": "sentinel",
   "reason": "turn",
   "issued_at": "2026-11-03T02:14:08Z",
   "nonce": "b7f3c2…",
@@ -64,7 +64,7 @@ turn, and the courier will not wake it again for this `id`.
 ## A hold, and why it wins
 
 ```bash
-rig hold caravaggio --reason "operator reviewing a finding"
+rig hold sentinel --reason "operator reviewing a finding"
 ```
 
 ```http

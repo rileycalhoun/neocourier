@@ -7,7 +7,7 @@ Apache-2.0.
 
 > A rig, in climbing, is the device that connects harnesses. `neocourier` is the rope
 > between them: it moves a message from one agent to another and proves who sent it.
-> It does not decide who may talk to whom — that is the [rig](https://github.com/)'s job.
+> It does not decide who may talk to whom — that is the [rig](https://github.com/rileycalhoun/hermes-rig)'s job.
 
 ## Why this exists
 

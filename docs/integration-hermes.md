@@ -76,7 +76,7 @@ The hard part is not the POST; it is making a turn **safe to start from outside*
 # in the agent's Hermes profile
 neocourier:
   daemon_url: http://courier.rig.internal:8765
-  agent: caravaggio
+  agent: sentinel
   key_file: /run/secrets/neocourier_key     # mounted, 0600, agent's uid
   wake:
     listen: 0.0.0.0:8766                    # this agent's wake surface
