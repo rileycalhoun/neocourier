@@ -3,6 +3,14 @@
 **A courier for agents.** Reliable, authenticated message delivery between Hermes agents,
 with wake-on-message so a message *starts a turn* instead of waiting to be polled.
 
+**This is a dependency, published separately rather than a second product.** It exists because
+the transport deserves its own version number and a clean boundary — not because it is meant to
+stand alone. Transport is a commodity: there are better-maintained buses than this one. What is
+not commodity is *agent-aware* delivery — wake-on-message, proof of delivery, and the
+distinction between "nothing arrived" and "nothing could arrive" — and that value is only
+legible underneath a control plane that can act on it. The control plane is
+[`hermes-rig`](https://github.com/rileycalhoun/hermes-rig); this is its delivery guarantee.
+
 Apache-2.0.
 
 > A rig, in climbing, is the device that connects harnesses. `neocourier` is the rope
