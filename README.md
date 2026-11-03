@@ -67,7 +67,10 @@ than pretending it was instant.
 
 ## Status: designed, not implemented
 
-**There is no code in this repository yet.** Every guarantee below — signed envelopes,
+**There is no code in this repository yet** — the schema and the example envelope are the only
+machine-readable artefacts here, and both are validated in CI on every push (a valid envelope
+must pass, an envelope missing its signature must fail, and an empty example set must not be
+reported as success). Every guarantee below — signed envelopes,
 at-least-once delivery, wake — is a specification with no implementation and no passing test
 beside it. It is written down so the implementation has something to be measured against, and
 so the design can be argued with before it is code.

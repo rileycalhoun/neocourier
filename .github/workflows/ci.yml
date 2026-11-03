@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  schema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Validate the example envelope against the schema
+        run: python tools/validate_examples.py
+      - name: The validator must reject an envelope with a missing signature
+        run: |
+          mkdir -p /tmp/bad
+          python - <<'PY'
+          import json
+          d = json.load(open("examples/envelope.example.json"))
+          d.pop("sig")
+          json.dump(d, open("/tmp/bad/envelope.json", "w"))
+          PY
+          if NEO_EXAMPLE_GLOB='/tmp/bad/*.json' python tools/validate_examples.py; then
+            echo "::error::validator accepted an envelope with no sig"
+            exit 1
+          fi
+          echo "correctly rejected an envelope with no sig"
+      - name: An empty example set must not look like a passing one
+        run: |
+          if NEO_EXAMPLE_GLOB='/tmp/empty/*.json' python tools/validate_examples.py; then
+            echo "::error::validator reported success while reading zero examples"
+            exit 1
+          fi
+          echo "correctly refused to report success with zero examples"
