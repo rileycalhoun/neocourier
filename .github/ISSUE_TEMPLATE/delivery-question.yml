@@ -1,0 +1,41 @@
+name: Delivery question or bug
+description: Ask about neocourier, report a bug, or describe a delivery problem.
+title: "[delivery] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repo has no email contact — an issue **is** the channel, and it stays searchable.
+
+        **There is no implementation yet.** If you are asking "where is the code", the answer is
+        the README: designed, not implemented. Design objections are welcome and are the most
+        useful thing you can send right now.
+  - type: textarea
+    id: context
+    attributes:
+      label: What are you trying to do?
+      description: The delivery problem in your own words — wake-on-message, delivery proof, queue behaviour, agent authentication.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen, and what happens instead?
+      description: If this is a design objection, say which section of the spec you think is wrong and why.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: What constraints matter in your deployment?
+      description: Hosts, container topology, whether agents have inbound ports, message volume, offline windows.
+    validations:
+      required: false
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Before you file
+      options:
+        - label: I have removed credentials, tokens and customer data from this report.
+          required: true

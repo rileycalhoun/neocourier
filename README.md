@@ -11,6 +11,10 @@ distinction between "nothing arrived" and "nothing could arrive" — and that va
 legible underneath a control plane that can act on it. The control plane is
 [`hermes-rig`](https://github.com/rileycalhoun/hermes-rig); this is its delivery guarantee.
 
+**Questions, design objections, or a delivery problem: [open an issue](https://github.com/rileycalhoun/neocourier/issues/new/choose).**
+There is no email contact — an issue is the channel. Design objections are the most useful
+thing you can send while this is still a specification.
+
 Apache-2.0.
 
 > A rig, in climbing, is the device that connects harnesses. `neocourier` is the rope
