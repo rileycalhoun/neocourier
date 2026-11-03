@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://neocourier.dev/schema/envelope.v1.json",
+  "title": "neocourier envelope v1",
+  "description": "One message between agents. See docs/protocol.md for the rules behind each field.",
+  "type": "object",
+  "required": ["v", "id", "sent_at", "from", "to", "kind", "body", "sig"],
+  "additionalProperties": false,
+  "properties": {
+    "v": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "description": "ULID chosen by the sender. Idempotency key: a repeat is a duplicate, not a new message."
+    },
+    "sent_at": { "type": "string", "format": "date-time", "description": "Sender's clock. Preserved through queuing." },
+    "from": { "$ref": "#/$defs/party" },
+    "to": { "$ref": "#/$defs/party" },
+    "thread": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "reply_to": { "type": ["string", "null"] },
+        "depth": { "type": "integer", "minimum": 0, "description": "Wake ceiling uses this; past it the courier delivers without waking." }
+      }
+    },
+    "kind": { "enum": ["message", "signal", "request", "response", "receipt"] },
+    "subject": { "type": "string", "maxLength": 200 },
+    "body": {
+      "type": "object",
+      "required": ["content_type", "content"],
+      "additionalProperties": false,
+      "properties": {
+        "content_type": { "enum": ["text/markdown", "text/plain", "application/json"] },
+        "content": { "type": "string", "maxLength": 262144 }
+      }
+    },
+    "wake": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "enum": ["none", "turn"] },
+        "budget": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "turns": { "type": "integer", "minimum": 1, "maximum": 5 } }
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant": { "type": "string", "description": "Reference to the rig's contract hash, not a boolean." },
+        "capability": { "type": "string", "examples": ["message.send", "message.send:van-gogh"] },
+        "sig": { "type": ["string", "null"], "description": "Reserved: separate rig signature over auth (v1.0)." }
+      }
+    },
+    "sig": {
+      "type": "object",
+      "required": ["alg", "key_id", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "alg": { "const": "ed25519" },
+        "key_id": { "type": "string", "description": "Named in the signature, never inferred." },
+        "value": { "type": "string", "description": "base64 signature over canonical JSON of the envelope with sig removed." }
+      }
+    },
+    "ttl_seconds": { "type": "integer", "minimum": 60, "description": "Optional sender-declared lifetime; past it the courier returns expired rather than delivering." }
+  },
+  "$defs": {
+    "party": {
+      "type": "object",
+      "required": ["agent"],
+      "additionalProperties": false,
+      "properties": {
+        "agent": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,62}$", "description": "Agent name, not a host or container id." },
+        "key_id": { "type": "string" }
+      }
+    }
+  }
+}

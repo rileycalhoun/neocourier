@@ -1,0 +1,15 @@
+# OS / editor
+.DS_Store
+*.swp
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+# Node
+node_modules/
+# Local deployment values — never commit a real deployment
+.env
+*.local.yml
+*.local.yaml
+/srv/
