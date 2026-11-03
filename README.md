@@ -61,6 +61,18 @@ A message to a stopped container is **queued, not lost**, and delivered on wake 
 original sent-at time intact — the recipient can see it was delayed, which matters more
 than pretending it was instant.
 
+## Status: designed, not implemented
+
+**There is no code in this repository yet.** Every guarantee below — signed envelopes,
+at-least-once delivery, wake — is a specification with no implementation and no passing test
+beside it. It is written down so the implementation has something to be measured against, and
+so the design can be argued with before it is code.
+
+Saying this plainly is deliberate: a documented guarantee with nothing behind it is the same
+artefact as a route description that claims an auth posture it does not have, or a monitor that
+prints a summary on a clean run. The next push here either ships the envelope plus its tests or
+this notice stays where it is.
+
 ## Documents
 
 | Doc | What it settles |
