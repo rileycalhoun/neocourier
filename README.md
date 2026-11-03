@@ -65,6 +65,12 @@ A message to a stopped container is **queued, not lost**, and delivered on wake 
 original sent-at time intact — the recipient can see it was delayed, which matters more
 than pretending it was instant.
 
+## Implementation language
+
+**Rust**, same rules as the rig: entire backend, Rust Style Guide, warnings denied, `forbid(unsafe_code)`
+per crate. The Python validator in this repo is a schema check, not the implementation, and the
+workflow that runs it is paused with the rest until the documentation is signed off.
+
 ## Status: designed, not implemented
 
 **There is no code in this repository yet** — the schema and the example envelope are the only
