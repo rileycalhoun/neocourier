@@ -41,14 +41,16 @@ rather than downgrade: an unsigned message from a known agent is `unauthorized`,
 A signature proves authorship, not freshness. A captured envelope is valid forever unless
 something bounds it. Three cheap bounds, all required:
 
-1. **`sent_at` inside a window** (default ±120s of receipt). Outside it: `expired`. The
-   window is configurable because clock skew is real; it is never zero and never unbounded.
+1. **`sent_at` inside a window** (default ±120 s of receipt). Outside it: `expired`. The window
+   is a signed timestamp rather than a nonce, which needs no receiver state and therefore cannot
+   be defeated by a receiver that forgets; the window is configurable because clock skew is
+   real, and it is never zero and never unbounded.
 2. **`id` uniqueness per sender** — the store rejects a reused `id` from the same agent even
    with a valid signature. A second delivery of an accepted `id` is a `duplicate` receipt,
    which is the honest answer.
-3. **`nonce`** — optional, for messages with `wake.mode: "turn"`, because a replayed wake
-   costs a turn while a replayed signal costs nothing. The courier keeps a short-lived set
-   of seen nonces per sender.
+3. **`nonce`** — optional and only where a receiver wants belt-and-braces for
+   `wake.mode: "turn"`. Required nowhere: dedupe on `id` plus a short timestamp window already
+   covers the replay class, and state a receiver must remember is state it can lose.
 
 Deliberately **not** used: a global monotonic counter. It would require every agent to
 coordinate sequence numbers through a single writer, which reintroduces the bottleneck
@@ -59,7 +61,9 @@ neocourier exists to avoid.
 `auth.grant` carries the **contract hash** issued by the rig when the sender was hired and
 the specific `capability` being exercised (`message.send`, `message.send:atlas`, …).
 
-- neocourier checks the signature and the capability syntax, and records the grant.
+- neocourier checks the signature and the capability syntax, and records the grant. Public keys
+  are resolved from the **rig's registry** — never from a header, never from the message body,
+  because an attacker can supply either and cannot supply the registry.
 - The **receiver** decides whether that grant justifies the message, because only the
   receiver knows what it is being asked to do.
 - A receiver that does not recognize the grant issuer marks the message `untrusted` and
@@ -81,6 +85,16 @@ the rig rules.**
 Every one of these is a **detection** problem first. The daemon records verification
 failures with the agent, `key_id` and reason; an alert on `unauthorized` volume is the
 earliest signal that something is wrong.
+
+## Revocation and rate
+
+- Every key carries `not_after`. Revocation is one registry write; in-flight messages signed
+  before the revocation stay valid as history until their TTL expires.
+- Each agent has a **per-agent message rate**. It exists so a compromised key can be *drained*
+  and *starved* without taking the fleet down: the blast radius of one stolen key is one
+  identity, at a bounded rate, visible in the audit trail.
+- Revocation does not rewrite history. A revoked key's past messages remain verifiable — they
+  happened, and pretending otherwise is how an audit trail stops being one.
 
 ## Key distribution
 

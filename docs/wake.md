@@ -8,9 +8,15 @@ work — and the mechanism that can most easily be abused.
 
 | Mode | Shape | When it is right |
 |---|---|---|
-| **Push webhook** | courier POSTs a signed `wake` to the agent's own HTTP surface | the agent has an addressable surface (the normal case in a rig) |
-| **Pull long-poll** | agent holds a request open against the courier; a message completes it | the agent is unaddressable (NAT, no ingress, air-gapped) |
-| **Sidecar signal** | courier writes to a local socket/file the agent's supervisor watches | agent and courier share a host or a network namespace |
+| **Pull long-poll** *(default)* | the agent holds a request open against the courier; a message completes it | **the product default**: no agent needs an inbound port at all |
+| **Push webhook** | courier POSTs a signed `wake` to the agent's own HTTP surface | an agent that already has an addressable surface for other reasons |
+| **Sidecar signal** | courier writes to a local socket the agent's supervisor watches | courier and agent share a host or namespace |
+
+**Default to pull.** A product where no agent has an inbound port has a security story that
+fits in one sentence: there is nothing to attack from outside because nothing is listening. A
+webhook default would make every agent a carefully-protected little server, and "carefully
+protected" is a promise, not a property. This matches what the existing file relay already does
+locally — the agent's supervisor pulls — so it is also the shape with the least new behaviour.
 
 All three deliver the *same* envelope. Wake is a delivery hint, never the delivery itself:
 the agent always fetches the message by `id` from the store, so a malformed wake cannot
@@ -36,6 +42,11 @@ POST /neocourier/wake
 
 `202` means "I will start a turn and pull that `id`". It never means "processed". The work is
 done when the agent acknowledges the envelope with a `receipt`.
+
+**The wake's own freshness is a signed timestamp, not a nonce.** A nonce only means anything if
+the receiver keeps state about it; a `sent_at` inside the signed body with a short window
+(60–120 s) is stateless and enough, because the envelope id already dedupes anything inside the
+window. Reject outside the window as `expired` and say so — never silently accept a stale wake.
 
 ## Why the agent, not the courier, decides
 
@@ -63,6 +74,10 @@ Two agents that wake each other are an infinite loop with a bill. Three defences
 3. **Wake deduplication.** Multiple messages arriving for a stopped agent coalesce into
    **one** wake when the agent comes back, not N wakes. The wake says "you have 7 new
    messages, oldest 3h old" rather than replaying seven triggers.
+
+**Every drop is recorded and reported**, with a reason — `dropped: provenance_cycle`,
+`dropped: thread_turn_cap`, `dropped: budget`. A loop guard that drops quietly is the same
+defect as a broken alarm that shares a component with the thing it watches.
 
 The metric that matters is **wakes per delivered message**. It should be slightly above 1
 (each wake yields at least the message it named) and if it climbs, something is looping.

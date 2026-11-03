@@ -2,6 +2,13 @@
 
 Small and correct first. Each milestone is shippable and has a test that fails today.
 
+## Sequencing: before the container split, not after
+
+The moment agents move into standalone containers, the file-based relay stops working — no
+shared filesystem, so cross-agent messaging that works today would break at the topology change.
+So neocourier ships **before** the split, or the split retrofits messaging into an architecture
+that has none.
+
 ## v0.1 — one host, real delivery
 
 - [ ] Envelope schema + canonical JSON signing/verification (`docs/protocol.md`, `docs/auth.md`)
@@ -12,7 +19,13 @@ Small and correct first. Each milestone is shippable and has a test that fails t
 - [ ] CLI: `courier send|inbox|read|receipt|status` for debugging without an agent
 - [ ] Acceptance: the five failure drills in `docs/operations.md`
 
-**Not in v0.1:** relay, cross-host, SSE, loop detector, retention compaction, Postgres.
+**Ownership test, in the spec from day one:** delete neocourier's database, rebuild it from the
+rig's registry plus undelivered envelopes. If anything is unrecoverable, neocourier owns
+something it should not — sessions, policy and the roster all belong to the rig. Split-brain
+during a hire is an agent nobody can reach, and it starts with a transport that quietly believes
+it decides who exists.
+
+**Not in v0.1:** relay, cross-host, loop detector, retention compaction, Postgres.
 
 ## v0.2 — the Hermes plugin
 

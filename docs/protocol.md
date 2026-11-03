@@ -20,6 +20,24 @@ and every field exists because something broke without it.
 }
 ```
 
+## Prior art: this contract exists, locally
+
+Before specifying a new messenger, note that Hermes already implements most of this **as file
+plumbing** (`tools/bot_relay.py`), verified in the running install: a roster of agents on other
+connections, an `outbox/` of queued envelopes, `claimed/`, `replies/` and `locks/` directories, a
+waiter spawned at send time so the reply wakes the sender like a local DM, an envelope TTL
+(default **900 s**) with a `queued_expired` verdict, `EnvelopeRefusedError` when the target is
+definitively offline ("fail fast instead of queueing a DM nobody will drain"), and one retry
+under a derived identity on transient failure.
+
+So this project is **the relay's envelope contract, networked** — not a greenfield messenger.
+Its file transport cannot survive standalone containers (no shared filesystem), which is exactly
+why the contract has to move to the network. Keeping the contract means every existing client of
+`message_agent` does not have to learn a second behaviour.
+
+What the existing relay deliberately lacks, and what this project must add: **per-agent
+authentication** (the file relay's trust is the filesystem and one uid) and **loop control**.
+
 ## Field rules
 
 **`v`** — envelope version. A receiver MUST reject a version it does not know rather than
@@ -36,6 +54,10 @@ and `delivered_at`. Ageing silently is how a stale instruction gets acted on as 
 
 **`from.agent` / `to.agent`** — the **agent name**, not a container id, host or URL.
 Names survive redeploys; addresses do not. Routing is a lookup, not a hardcoded host.
+
+**`via`** — the provenance chain: the agents this envelope has traversed, capped at 8 hops.
+An envelope whose chain already contains the recipient is **dropped as a cycle**, recorded with
+`dropped: provenance_cycle`. Loop control that is silent is not loop control.
 
 **`thread.id` / `thread.reply_to`** — a coarse conversation handle. `reply_to` names the
 envelope being answered, which makes a reply chain auditable and lets a receiver suppress a
@@ -83,10 +105,27 @@ enforce it.** A strict global order would demand a single writer and make the wh
 serial. Where order matters — a decision and the instruction that follows it — use
 `reply_to` and let the client refuse to act on a message whose parent it has not seen.
 
-**Offline is a first-class state, not an error.** A message to a stopped agent is stored,
-and on wake the client is given the backlog oldest-first with `delayed: true` and the age.
-The client decides what is still relevant. The transport never silently drops a backlog
-because it "looked old".
+**Offline is bounded, not infinite.** A message to a stopped agent is stored, but only for a
+**TTL (default 900 s, matching the existing relay and the claim-store stale window — one number
+in the system, not three)**. Past it, the message does not vanish: it settles as one of three
+terminal verdicts reported to the sender.
+
+| Verdict | Means | Sender should |
+|---|---|---|
+| `delivered` | accepted by the target and receipted | nothing |
+| `expired` | TTL passed while the target was down | decide whether it is still true, then resend as a **new** id |
+| `refused` | target declined (hold, budget, liveness) | read the reason; do not retry blindly |
+
+Not "queue forever". A queued message to a dead agent is a silent lie, and a silent lie is
+indistinguishable from success — the exact conflation this project exists to remove. "Down" is
+normal for a container (restarts), which is why the window is minutes rather than the relay's
+fail-fast seconds, and why the verdict is explicit instead of an absence.
+
+The per-agent queue cap remains as a **backstop against an abused sender**, not as the primary
+policy: TTL settles messages, the cap protects the store.
+
+Within the TTL, the backlog is delivered oldest-first with `delayed: true` and the age, and the
+client decides what is still relevant. Ageing is preserved, never rewritten.
 
 ## Error model
 
